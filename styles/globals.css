@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.bg-douyin {
+  background-color: #1f1f2b;
+}
+.video-pos {
+  object-position: 0px -400px;
+}
