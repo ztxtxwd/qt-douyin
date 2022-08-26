@@ -6,6 +6,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@asurraa/react-ts-flv-player": "^1.0.14",
     "flv.js": "^1.6.2",
     "next": "latest",
     "react": "18.1.0",

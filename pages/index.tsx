@@ -1,7 +1,16 @@
 import type { NextPage } from 'next';
-import ReactFlvPlayerWrapper from './ReactFlvPlayerWrapper';
+// create wrapper components
+import dynamic from 'next/dynamic';
+export const ReactFlvPlayerWrapper = dynamic(
+  () => import('@asurraa/react-ts-flv-player/dist/NextReactFlvPlayer'),
+  {
+    ssr: false,
+  }
+);
+// import ReactFlvPlayerWrapper from './ReactFlvPlayerWrapper';
+// import ReactFlvPlayer from './ReactFlvPlayer';
 const url =
-  'https://pull-flv-l13.douyincdn.com/stage/stream-111497065803284920_or4.flv?expire=1662042470&sign=c44f26b4f60cd45ff30494955b322f09';
+  'https://pull-flv-f1-admin.douyincdn.com/third/stream-111499196967682157_md.flv';
 const Home: NextPage = () => {
   return (
     <div className="flex max-h-screen flex-col items-center justify-center bg-douyin">
@@ -12,7 +21,7 @@ const Home: NextPage = () => {
       /> */}
       <ReactFlvPlayerWrapper
         url={url}
-        isMuted={false}
+        isMuted={undefined}
         isLive={true}
         showControls={true}
         enableStashBuffer={true}
