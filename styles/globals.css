@@ -2,9 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --video-mt: 364;
+  --video-height: 954;
+  --video-width: 1088;
+}
 .bg-douyin {
   background-color: #1f1f2b;
 }
 .video-pos {
-  object-position: 0px -400px;
+  object-position: 0px calc(-100vh / var(--video-height) * var(--video-mt));
+  width: calc(100vh / var(--video-height) * var(--video-width));
 }
