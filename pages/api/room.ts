@@ -23,11 +23,10 @@ type 连麦对象 = {
 };
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseError>
+  res: NextApiResponse<Object>
 ) {
-  const { query } = req;
-  const { id } = query;
-  // let response = await fetch(`${bff}/room?id=${id}`);
-  // return await response;
-  return query;
+  let response = await fetch(`${bff}/room?id=${req.query.id}`);
+  // return await response.json();
+  res.status(200).json( await response.json())
+  return res
 }

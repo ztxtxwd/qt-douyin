@@ -3,14 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --video-mt: 364;
-  --video-height: 954;
+  /* --video-mt: 364; */
+  --video-start-p: 0;
+  /* --video-height: 954; */
+  --video-end-p: 1;
   --video-width: 1088;
+  --video-height:1920;
 }
 .bg-douyin {
   background-color: #1f1f2b;
 }
 .video-pos {
-  object-position: 0px calc(-100vh / var(--video-height) * var(--video-mt));
-  width: calc(100vh / var(--video-height) * var(--video-width));
+  object-position: 0px calc(-100vh / var(--video-height)/(var(--video-end-p) - var(--video-start-p)) * var(--video-height)*var(--video-start-p));
+  width: calc(100vh / var(--video-height)/(var(--video-end-p) - var(--video-start-p)) * var(--video-width));
 }

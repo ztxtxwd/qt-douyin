@@ -1,10 +1,17 @@
 import type { NextPage } from 'next';
 // create wrapper components
 import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
 import { server } from '../config';
-
+// import Screenshot from '../components/Screenshot'
 export const ReactFlvPlayerWrapper = dynamic(
   () => import('@ztxtxwd/react-ts-flv-player/dist/ReactFlvPlayer'),
+  {
+    ssr: false,
+  }
+);
+export const Screenshot = dynamic(
+  () => import('../components/Screenshot'),
   {
     ssr: false,
   }
@@ -14,46 +21,53 @@ export const ReactFlvPlayerWrapper = dynamic(
 //   var a = nj.array([2, 3, 4]);
 //   console.log(a);
 // }
-
-// function ready() {
-//   let canvas = document.createElement('canvas'); //创建canvas标签
-//   let canvasCtx = canvas.getContext('2d');
-//   let video = document.getElementsByTagName('video')[0];
-//   //设置canvas画布的宽和高，这一步很重要，决定截图是否完整
-//   canvas.width = video.offsetWidth;
-//   canvas.height = video.offsetHeight;
-//   let width = 1088;
-//   let height = 1920;
-//   //用drawImage方法将图片保存下来
-//   if (canvasCtx) {
-//     alert(3);
-//     var a = numjs.array([2, 3, 4]);
-//     console.log(a);
-//     canvasCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
-//   }
-// }
-
-const Home: NextPage = (pageProps) => {
+type Props = {
+  高清流: 流;
+  低清流: 流;
+  主播头像:string;
+  直播间标题:string;
+};
+type 流 = {
+  url: string;
+  width: number;
+  height: number;
+};
+const Home: NextPage<Props> = (pageProps) => {
   const url =
-    'https://pull-flv-f13.douyincdn.com/stage/stream-399893771064967269_or4.flv?expire=1664520139&sign=d82de27d4556f38331c692ad88057d02';
+    'https://pull-l3.douyincdn.com/stage/stream-111681004412338258_or4.flv';
   const classNames = 'h-screen object-cover video-pos';
+
   // ready();
+  useEffect(() => {
+    var link: HTMLLinkElement = document.querySelector("link[rel*='icon']") || document.createElement('link');
+    link.type = 'image/x-icon';
+    link.rel = 'shortcut icon';
+    link.href = pageProps.主播头像
+    document.getElementsByTagName('head')[0].appendChild(link);
+    document.title = pageProps.直播间标题
+    document.documentElement.style.setProperty('--video-height',''+(pageProps.高清流.height||'1920') );
+    document.documentElement.style.setProperty('--video-width', ''+(pageProps.高清流.width||'1080'));
+  }, []);
   return (
     <div className="flex max-h-screen flex-col items-center justify-center bg-douyin">
       <ReactFlvPlayerWrapper
-        url={url}
+        url={pageProps.高清流.url}
         isMuted={true}
         isLive={true}
         showControls={true}
         enableStashBuffer={true}
         classNames={classNames}
       />
+      <Screenshot url={pageProps.低清流.url} ></Screenshot>
     </div>
   );
 };
 Home.getInitialProps = async function (context) {
-  let res = await fetch(`${server}/api/hello?id=${context.query.id}`);
-  return await res.json();
+  let res = await fetch(`${server}/api/room?id=${context.query.id}`);
+  let json = await res.json()
+  json.主播头像=json.anchor.avatar_thumb.url_list[0]
+  json.直播间标题=json.anchor.nickname+'的直播间'
+  return json;
 };
 
 export default Home;
