@@ -6,6 +6,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@tensorflow/tfjs-backend-cpu": "^3.21.0",
+    "@tensorflow/tfjs-core": "^3.21.0",
     "@ztxtxwd/react-ts-flv-player": "^1.1.7",
     "euclidean-distance": "^1.0.0",
     "flv.js": "^1.6.2",
