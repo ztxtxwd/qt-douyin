@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "@tensorflow/tfjs-backend-cpu": "^3.21.0",
+    "@tensorflow/tfjs-backend-wasm": "^3.21.0",
+    "@tensorflow/tfjs-backend-webgl": "^3.21.0",
     "@tensorflow/tfjs-core": "^3.21.0",
     "@ztxtxwd/react-ts-flv-player": "^1.1.7",
     "euclidean-distance": "^1.0.0",

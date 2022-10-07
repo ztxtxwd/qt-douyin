@@ -2,6 +2,17 @@ import { FC, Fragment, useEffect, useRef } from "react";
 import flvjs from "flv.js";
 import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-cpu';
+// import '@tensorflow/tfjs-backend-webgl';
+// Adds the WASM backend to the global backend registry.
+// import '@tensorflow/tfjs-backend-wasm';
+// Set the backend to WASM and wait for the module to be ready.
+// tf.setBackend('wasm').then(() => main());
+// import {getThreadsCount, setThreadsCount} from '@tensorflow/tfjs-backend-wasm';
+
+// setThreadsCount(2);
+// tf.setBackend('wasm').then(() => {
+//   console.log(getThreadsCount());
+// });
 var nj = require('numjs');
 
 export const Screenshot: FC<流> = (props) => {
@@ -19,7 +30,7 @@ export const Screenshot: FC<流> = (props) => {
         }else{
             r2 = 基准色
         }
-        console.log(r2)
+        // console.log(r2)
         let 行1=tf.tensor1d(r1)
         let 行2=tf.tensor1d(r2)
         // num = float(np.dot(v1, v2))  # 向量点乘
@@ -35,16 +46,15 @@ export const Screenshot: FC<流> = (props) => {
         }
         
     }
-    // const 识别上边界 = function(img:Array<Uint8Array>){
-    //     let index=0
-    //     let distance=0
-    //     const width=img[0].length/4
-    //     do {
-    //         distance=计算行相似度(img[index],nj.array([31, 31, 43, 255]).multiply(width).tolist())
-    //         index++
-    //     } while (distance < 0.99);
-    //     return index
-    // }
+    const 识别上边界 = function(img:Array<Array<Uint8Array>>){
+        let index=0
+        let distance=0
+        do {
+            distance=计算行相似度(img[index],nj.array([31, 31, 43, 255]).tolist())
+            index++
+        } while (distance > 0.9999);
+        return index+2
+    }
     useEffect(() => {
         const player = flvjs.createPlayer(
             {
@@ -66,7 +76,7 @@ export const Screenshot: FC<流> = (props) => {
             // console.log(e)
             height = e.height
             width = e.width
-            基准行 = nj.array(Array(width).fill([31, 31, 43, 255])).flatten().tolist()
+            基准行 = nj.array(Array(width/4).fill([31, 31, 43, 255])).flatten().tolist()
         })
         let oldStartRow = -1
         let oldEndRow = -1
@@ -80,38 +90,41 @@ export const Screenshot: FC<流> = (props) => {
             if (canvasCtx && video && width && height&&基准行) {
                 //设置canvas画布的宽和高，这一步很重要，决定截图是否完整
                 canvasCtx.drawImage(video, 0, 0, width, height);
-                let imageM = nj.images.read(canvas).reshape(height*width,4)
+                let imageM = nj.images.read(canvas)
                 let startRow: number = -1
                 let endRow: number = height
                 let 最大i=0
-                imageM.iteraxis(0, function (row: any, i: number) {
-                    // let 行内首像素 = row.tolist()[0]
-                    // let 行内末像素 = row.tolist()[width - 1]
-                    // let d = distance(行内首像素, [31, 31, 43, 255])
-                    // d += distance(行内末像素, [31, 31, 43, 255])
-                    // // console.log(d)
-                    // if (d > 88) {
-                    //     if (startRow == -1) {
-                    //         startRow = i
-                    //     }
-                    //     endRow = i
-                    // }
-                    if(i<最大i){
-                        return
-                    }
-                    let d = 计算行相似度(row.tolist(),[])
-                    // let d=0
-                    // console.log(d)
-                    if (d < 0.99) {
-                        最大i=i+width
-                        if (startRow == -1) {
-                            startRow = Math.floor(i/width)
-                        }
-                        endRow = Math.floor(i/width)
-                    }else{
-                        最大i=i
-                    }
-                });
+                let 首列=nj.rot90(imageM).tolist()[0]
+                startRow=识别上边界(首列)
+                endRow=height-识别上边界(首列.reverse())
+                // imageM.iteraxis(0, function (row: any, i: number) {
+                //     // let 行内首像素 = row.tolist()[0]
+                //     // let 行内末像素 = row.tolist()[width - 1]
+                //     // let d = distance(行内首像素, [31, 31, 43, 255])
+                //     // d += distance(行内末像素, [31, 31, 43, 255])
+                //     // // console.log(d)
+                //     // if (d > 88) {
+                //     //     if (startRow == -1) {
+                //     //         startRow = i
+                //     //     }
+                //     //     endRow = i
+                //     // }
+                //     // if(i<最大i){
+                //     //     return
+                //     // }
+                //     let d = 计算行相似度(row.slice([width]).tolist(),基准行)
+                //     // let d=0
+                //     // console.log(d)
+                //     if (d < 0.999) {
+                //         最大i=i+width
+                //         if (startRow == -1) {
+                //             startRow = i
+                //         }
+                //         endRow = i
+                //     }else{
+                //         最大i=i
+                //     }
+                // });
                 // console.log(startRow, endRow)
                 let array = imageM.tolist()
                 let distanceList = []
@@ -155,3 +168,7 @@ export const Screenshot: FC<流> = (props) => {
 }
 
 export default Screenshot;
+
+function main(): any {
+    throw new Error("Function not implemented.");
+}
