@@ -1,16 +1,26 @@
+/**
+ * 传入一个低清流地址，用来分析当前直播间是否发生连麦人数变化
+ */
 import { FC, Fragment, useEffect, useRef } from "react";
 import flvjs from "flv.js";
 import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-cpu';
+import { bff } from '../config';
 var nj = require('numjs');
 
 export const Screenshot: FC<流> = (props) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const distance = require('euclidean-distance')
-    const 更新连麦信息 = function () {
+    let 连麦人数=1
+    const 连麦上下边界配置={
+
+    }
+    const 更新连麦信息 = async function () {
         console.log("更新连麦信息")
+        let res = await fetch(`${bff}/link?id=235`);
+        let json = await res.json()
     }
     const 基准色 = nj.array([31, 31, 43, 255]).subtract(128).tolist()
+    let 默认阈值=0.999
     const 计算行相似度 = function (row1: Array<Uint8Array>, row2: Array<Uint8Array>) {
         let r1 = nj.array(row1).subtract(128).tolist()
         let r2
@@ -37,7 +47,7 @@ export const Screenshot: FC<流> = (props) => {
         do {
             distance = 计算行相似度(img[index], nj.array([31, 31, 43, 255]).tolist())
             index++
-        } while (distance > 0.999);
+        } while (distance > 默认阈值);
         return index
     }
     useEffect(() => {
@@ -58,7 +68,7 @@ export const Screenshot: FC<流> = (props) => {
         player.attachMediaElement(videoRef.current!);
         let 基准行: any
         player.on(flvjs.Events.METADATA_ARRIVED, (e) => {
-            // console.log(e)
+            console.log(e)
             height = e.height
             width = e.width
             基准行 = nj.array(Array(width / 4).fill([31, 31, 43, 255])).flatten().tolist()
@@ -70,6 +80,9 @@ export const Screenshot: FC<流> = (props) => {
             let canvas = document.createElement('canvas'); //创建canvas标签
             canvas.height = height
             canvas.width = width
+            if(width==360){
+                默认阈值=0.995
+            }
             let canvasCtx = canvas.getContext('2d');
             let video = document.getElementById('screenshot') as HTMLVideoElement;
             if (canvasCtx && video && width && height && 基准行) {
@@ -84,30 +97,33 @@ export const Screenshot: FC<流> = (props) => {
                 let array = imageM.tolist()
 
                 let 四宫格 = false
+                // console.log(首列)
                 if (startRow > 10) {
-                    let 有效部分 = imageM.slice([startRow, endRow],[10]).tolist()
-                    let 中间行=Math.floor((startRow+endRow)/2)
+                    // let 有效部分 = imageM.slice([startRow, endRow], [10]).tolist()
+                    let 中间行 = 首列.length-Math.floor((startRow + endRow) / 2)
                     for (let index = 0; index < 10; index++) {
-                        let 上距离 = 计算行相似度(首列[中间行+index-9],首列[中间行+index-8])
-                        console.log(中间行+index-9)
-                        if(上距离<0.99){
-                            四宫格=true
+                        let 上距离 = 计算行相似度(首列[中间行 + index - 4], 首列[中间行 + index - 3])
+                        // console.log(首列[中间行 + index - 3])
+                        if (上距离 < 0.95) {
+                            四宫格 = true
+                            // console.log("有线")
                             break
                         }
                     }
-                    console.log(四宫格)
-                    if (Math.abs((endRow - startRow) - (oldEndRow - oldStartRow)) > 10) {
-                        //发现布局发生改变
-                        document.documentElement.style.setProperty('--video-start-p', startRow / height + '');
-                        document.documentElement.style.setProperty('--video-end-p', endRow / height + '');
-                        // TODO: 人数变化
-                        更新连麦信息()
-                    } else if (startRow > 10 && 之前是四宫格 != 四宫格) {
-                        // TODO: 人数变化
-                        更新连麦信息()
-                    }
-                }
 
+                }
+                // console.log(四宫格)
+                if (Math.abs((endRow - startRow) - (oldEndRow - oldStartRow)) > 10) {
+                    //发现布局发生改变
+                    document.documentElement.style.setProperty('--video-start-p', startRow / height + '');
+                    document.documentElement.style.setProperty('--video-end-p', endRow / height + '');
+                    // TODO: 人数变化
+                    debugger
+                    props.更新连麦信息(props.id)
+                } else if (startRow > 10 && 之前是四宫格 != 四宫格) {
+                    // TODO: 人数变化
+                    props.更新连麦信息(props.id)
+                }
                 oldStartRow = startRow
                 oldEndRow = endRow
                 之前是四宫格 = 四宫格
